@@ -1,7 +1,8 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "./utils/supabase/middleware";
 
 export function proxy(request: NextRequest) {
+  if (process.env.MOCK_DATA) return NextResponse.next();
   return updateSession(request);
 }
 

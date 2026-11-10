@@ -3,6 +3,7 @@ import "server-only";
 import { requireShowroomOwner } from "@/app/data/admin-auth.server";
 import type { CarFinance, FinanceCarSummary } from "@/app/data/car-finances";
 import { createClient } from "@/utils/supabase/server";
+import { MOCK_CARS, MOCK_FINANCES } from "./mock";
 
 export type AdminFinanceResult<T> =
   | { data: T; error: null }
@@ -16,6 +17,7 @@ export async function getAdminCarFinances(
   carIds?: string[],
 ): Promise<AdminFinanceResult<CarFinance[]>> {
   await requireShowroomOwner();
+  if (process.env.MOCK_DATA) return { data: MOCK_FINANCES, error: null };
 
   try {
     const supabase = await createClient();
@@ -45,6 +47,7 @@ export async function getAdminCarFinance(
   carId: string,
 ): Promise<AdminFinanceResult<CarFinance | null>> {
   await requireShowroomOwner();
+  if (process.env.MOCK_DATA) return { data: MOCK_FINANCES.find(f => f.car_id === carId) ?? null, error: null };
 
   try {
     const supabase = await createClient();
@@ -75,6 +78,7 @@ export async function getAdminFinanceDashboardData(): Promise<
   AdminFinanceResult<AdminFinanceDashboardData>
 > {
   await requireShowroomOwner();
+  if (process.env.MOCK_DATA) return { data: { cars: MOCK_CARS, finances: MOCK_FINANCES }, error: null };
 
   try {
     const supabase = await createClient();

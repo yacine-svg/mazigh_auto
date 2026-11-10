@@ -27,6 +27,12 @@ export async function hasShowroomOwnerMembership(
 }
 
 export const requireShowroomOwner = cache(async () => {
+  if (process.env.MOCK_DATA) {
+    // Preview demo: open the admin without a Supabase login.
+    const { cookies } = await import("next/headers");
+    await cookies();
+    return { id: "demo", email: "demo@mazighauto.dz" as string | null };
+  }
   const supabase = await createClient();
   const {
     data: { user },

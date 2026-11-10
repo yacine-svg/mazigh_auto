@@ -6,6 +6,7 @@ import { requireShowroomOwner } from "@/app/data/admin-auth.server";
 import { createClient } from "@/utils/supabase/server";
 import type { Car, CarFuel, CarImage, CarStatus } from "./cars";
 import { STATUS_LABELS } from "./cars";
+import { MOCK_CARS } from "./mock";
 
 export type { Car };
 
@@ -141,6 +142,7 @@ function toQueryError(error: unknown): VehicleQueryError {
 
 export const getPublicVehicles = cache(
   async (): Promise<VehicleQueryResult<Car[]>> => {
+    if (process.env.MOCK_DATA) return { data: MOCK_CARS.filter(c => c.statut !== "brouillon"), error: null };
     try {
       const supabase = await createClient();
       const { data, error } = await supabase
@@ -167,6 +169,7 @@ export const getPublicVehicles = cache(
 
 export const getAdminVehicles = cache(
   async (): Promise<VehicleQueryResult<Car[]>> => {
+    if (process.env.MOCK_DATA) return { data: MOCK_CARS, error: null };
     try {
       await requireShowroomOwner();
 
@@ -193,6 +196,7 @@ export const getAdminVehicles = cache(
 
 export const getPublicVehicleBySlug = cache(
   async (slug: string): Promise<VehicleQueryResult<Car | null>> => {
+    if (process.env.MOCK_DATA) return { data: MOCK_CARS.find(c => c.slug === slug || c.id === slug) ?? null, error: null };
     try {
       const supabase = await createClient();
       const decoded = decodeURIComponent(slug).trim();
@@ -228,6 +232,7 @@ export const getPublicVehicleBySlug = cache(
 
 export const getCarById = cache(
   async (id: string): Promise<VehicleQueryResult<Car | null>> => {
+    if (process.env.MOCK_DATA) return { data: MOCK_CARS.find(c => c.id === id) ?? null, error: null };
     try {
       await requireShowroomOwner();
 
