@@ -1082,22 +1082,33 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
       </div>
 
       {/* SUBMIT BUTTON BAR */}
-      <div className="panel sticky bottom-3 z-20 flex flex-wrap items-center justify-between gap-3 p-3 shadow-[var(--shadow-lg)] backdrop-blur">
-        <Link href="/admin/voitures" className="btn btn-ghost">
+      <div className="panel sticky bottom-3 z-20 flex items-center gap-2 p-2.5 shadow-[var(--shadow-lg)] sm:gap-3 sm:p-3">
+        <Link href="/admin/voitures" className="btn btn-ghost btn-lg shrink-0">
           Annuler
         </Link>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-xs text-fg-3 sm:inline">
-            {images.length} photo{images.length !== 1 ? "s" : ""} · {selectedOptions.length} option{selectedOptions.length !== 1 ? "s" : ""}
+        <span className="ml-auto hidden text-xs text-fg-3 md:inline">
+          {images.length} photo{images.length !== 1 ? "s" : ""} · {selectedOptions.length} option{selectedOptions.length !== 1 ? "s" : ""}
+        </span>
+        <button
+          type="submit"
+          disabled={isPending || isUploadingFiles}
+          className="btn btn-primary btn-lg min-w-0 flex-1 md:flex-none"
+        >
+          <span className="truncate">
+            {isPending ? (
+              "Enregistrement…"
+            ) : mode === "edit" ? (
+              <>
+                Mettre à jour<span className="hidden sm:inline"> la voiture</span>
+              </>
+            ) : (
+              <>
+                <span className="sm:hidden">Publier la voiture</span>
+                <span className="hidden sm:inline">Créer et publier la voiture</span>
+              </>
+            )}
           </span>
-          <button type="submit" disabled={isPending || isUploadingFiles} className="btn btn-primary btn-lg">
-            {isPending
-              ? "Enregistrement en cours…"
-              : mode === "edit"
-              ? "Mettre à jour la voiture"
-              : "Créer et publier la voiture"}
-          </button>
-        </div>
+        </button>
       </div>
       </div>
 
