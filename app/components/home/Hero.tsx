@@ -105,7 +105,7 @@ export function Hero({ spotlight, stockCount }: HeroProps) {
           </div>
 
           {spotlight && (
-            <Link href={spotHref} className="hero-card spot-card group block lg:w-[22rem]" data-cursor="Voir">
+            <Link href={spotHref} className="hero-card spot-card group block" data-cursor="Voir">
               <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-surface-2">
                 <CarImage
                   src={spotCover}

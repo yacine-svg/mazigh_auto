@@ -159,6 +159,7 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
+@layer components {
 /* ---------- Layout helpers ---------- */
 .wrap {
   width: 100%;
@@ -733,7 +734,8 @@ select.field option {
 
 .spot-card {
   position: relative;
-  width: min(100%, 22rem);
+  width: 22rem;
+  max-width: 100%;
   flex: none;
   padding: 1.1rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1916,6 +1918,8 @@ button.kpi:hover {
   overflow: hidden;
   isolation: isolate;
   border-right: 1px solid var(--line);
+}
+
 }
 
 /* ---------- Reduced motion ---------- */
