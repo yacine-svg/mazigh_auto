@@ -7,17 +7,20 @@ type VehicleAvailabilityStateProps = {
 
 export function VehicleAvailabilityState({ status }: VehicleAvailabilityStateProps) {
   const isEmpty = status === "empty";
+  const Icon = isEmpty ? CarFront : CircleAlert;
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-8 sm:p-12 text-center space-y-4">
-      {isEmpty ? (
-        <CarFront className="w-12 h-12 text-gray-500 mx-auto" aria-hidden="true" />
-      ) : (
-        <CircleAlert className="w-12 h-12 text-gray-500 mx-auto" aria-hidden="true" />
-      )}
-      <p className="text-sm sm:text-base text-gray-300">
+    <div className="relative overflow-hidden rounded-[22px] border border-line bg-surface px-6 py-14 text-center sm:px-12">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_80%_at_50%_0%,rgba(227,38,47,0.12),transparent_70%)]" aria-hidden="true" />
+      <span className="relative mx-auto grid h-14 w-14 place-items-center rounded-full border border-line-2 text-fg-3">
+        <Icon className="h-6 w-6" aria-hidden="true" />
+      </span>
+      <p className="display relative mt-6 text-2xl">
+        {isEmpty ? "Nouveaux arrivages bientôt" : "Catalogue momentanément indisponible"}
+      </p>
+      <p className="relative mx-auto mt-3 max-w-md text-sm text-fg-3">
         {isEmpty
-          ? "Aucune voiture disponible pour le moment. Contactez-nous sur WhatsApp."
+          ? "Aucune voiture n'est affichée pour le moment. Écrivez-nous sur WhatsApp pour connaître le stock du jour."
           : "Impossible de charger les véhicules pour le moment. Veuillez réessayer plus tard."}
       </p>
       {isEmpty && (
@@ -25,9 +28,9 @@ export function VehicleAvailabilityState({ status }: VehicleAvailabilityStatePro
           href={buildGenericWhatsAppUrl()}
           target="_blank"
           rel="noreferrer"
-          className="whatsapp-button inline-flex items-center justify-center gap-2"
+          className="btn btn-wa relative mt-7"
         >
-          <MessageCircle className="w-4 h-4" aria-hidden="true" />
+          <MessageCircle aria-hidden="true" />
           WhatsApp
         </a>
       )}

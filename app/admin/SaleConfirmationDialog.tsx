@@ -85,51 +85,26 @@ export function SaleConfirmationDialog({
     });
   };
 
-  const fieldClass =
-    "w-full rounded-lg border border-[#333] bg-[#1E1E1E] p-2.5 text-sm text-white focus:border-[var(--primary)] focus:outline-none";
-
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-sm">
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="sale-dialog-title"
-        className="my-auto max-h-[calc(100vh-2rem)] w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl border border-[#333] bg-[#1A1A1A] p-5 shadow-2xl sm:p-6"
-      >
-        <div>
-          <h2 id="sale-dialog-title" className="text-xl font-bold text-white">
-            Marquer comme vendue
-          </h2>
-          <p className="mt-1 text-sm text-gray-400">
-            Prix affiché : {formatPriceDZD(listedPrice)}
-          </p>
+    <div className="dialog-backdrop">
+      <section role="dialog" aria-modal="true" aria-labelledby="sale-dialog-title" className="dialog !max-w-xl" data-lenis-prevent>
+        <div className="dialog-head">
+          <span className="pill status-badge-vendue">Vente</span>
+          <h2 id="sale-dialog-title" className="mt-3">Marquer comme vendue</h2>
+          <p className="mt-1 text-sm text-fg-3">Prix affiché : {formatPriceDZD(listedPrice)}</p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1.5 text-sm text-gray-300">
-            Prix de vente (DA)
-            <input
-              type="number"
-              min="0"
-              step="1"
-              required
-              value={salePrice}
-              onChange={(event) => setSalePrice(event.target.value)}
-              className={fieldClass}
-            />
+        <div className="dialog-body grid gap-4 sm:grid-cols-2">
+          <label>
+            <span className="label">Prix de vente (DA)</span>
+            <input type="number" min="0" step="1" required value={salePrice} onChange={(event) => setSalePrice(event.target.value)} className="field" />
           </label>
-          <label className="space-y-1.5 text-sm text-gray-300">
-            Date de vente
-            <input
-              type="date"
-              required
-              value={saleDate}
-              onChange={(event) => setSaleDate(event.target.value)}
-              className={fieldClass}
-            />
+          <label>
+            <span className="label">Date de vente</span>
+            <input type="date" required value={saleDate} onChange={(event) => setSaleDate(event.target.value)} className="field" />
           </label>
-          <div className="space-y-1.5 text-sm text-gray-300">
-            <label htmlFor="sale-purchase-price">Prix d&apos;achat (DA)</label>
+          <div>
+            <label htmlFor="sale-purchase-price" className="label">Prix d&apos;achat (DA)</label>
             <input
               id="sale-purchase-price"
               type="number"
@@ -138,19 +113,15 @@ export function SaleConfirmationDialog({
               disabled={purchaseUnknown}
               value={purchasePrice}
               onChange={(event) => setPurchasePrice(event.target.value)}
-              className={fieldClass}
+              className="field"
             />
-            <label className="flex items-center gap-2 text-xs text-gray-400">
-              <input
-                type="checkbox"
-                checked={purchaseUnknown}
-                onChange={(event) => setPurchaseUnknown(event.target.checked)}
-              />
+            <label className="check mt-2 !text-xs">
+              <input type="checkbox" checked={purchaseUnknown} onChange={(event) => setPurchaseUnknown(event.target.checked)} />
               Je ne sais pas
             </label>
           </div>
-          <div className="space-y-1.5 text-sm text-gray-300">
-            <label htmlFor="sale-fees">Frais (DA)</label>
+          <div>
+            <label htmlFor="sale-fees" className="label">Frais (DA)</label>
             <input
               id="sale-fees"
               type="number"
@@ -159,76 +130,45 @@ export function SaleConfirmationDialog({
               disabled={feesUnknown}
               value={fees}
               onChange={(event) => setFees(event.target.value)}
-              className={fieldClass}
+              className="field"
             />
-            <label className="flex items-center gap-2 text-xs text-gray-400">
-              <input
-                type="checkbox"
-                checked={feesUnknown}
-                onChange={(event) => setFeesUnknown(event.target.checked)}
-              />
+            <label className="check mt-2 !text-xs">
+              <input type="checkbox" checked={feesUnknown} onChange={(event) => setFeesUnknown(event.target.checked)} />
               Je ne sais pas
             </label>
           </div>
-          <label className="space-y-1.5 text-sm text-gray-300 sm:col-span-2">
-            Acheteur (facultatif)
-            <input
-              value={buyer}
-              onChange={(event) => setBuyer(event.target.value)}
-              maxLength={200}
-              className={fieldClass}
-            />
+          <label className="sm:col-span-2">
+            <span className="label">Acheteur (facultatif)</span>
+            <input value={buyer} onChange={(event) => setBuyer(event.target.value)} maxLength={200} className="field" />
           </label>
-          <label className="space-y-1.5 text-sm text-gray-300 sm:col-span-2">
-            Notes privées (facultatif)
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              maxLength={5000}
-              rows={3}
-              className={fieldClass}
-            />
+          <label className="sm:col-span-2">
+            <span className="label">Notes privées (facultatif)</span>
+            <textarea value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={5000} rows={3} className="field" />
           </label>
+
+          <div
+            className={`flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-2 px-4 py-3 sm:col-span-2 ${
+              profit === null ? "text-fg-3" : profit > 0 ? "text-ok" : profit < 0 ? "text-bad" : "text-fg"
+            }`}
+            aria-live="polite"
+          >
+            <span className="text-sm text-fg-2">Bénéfice prévisionnel</span>
+            <strong className="mono">{profit === null ? "coût manquant" : formatPriceDZD(profit)}</strong>
+          </div>
+
+          {error && (
+            <p className="alert alert-bad sm:col-span-2" role="alert">
+              {error}
+            </p>
+          )}
         </div>
 
-        <p
-          className={`rounded-lg border border-[#333] bg-[#111] p-3 text-sm ${
-            profit === null
-              ? "text-gray-400"
-              : profit > 0
-                ? "text-emerald-400"
-                : profit < 0
-                  ? "text-red-400"
-                  : "text-white"
-          }`}
-          aria-live="polite"
-        >
-          Bénéfice prévisionnel :{" "}
-          {profit === null ? "coût manquant" : formatPriceDZD(profit)}
-        </p>
-
-        {error && (
-          <p className="text-sm text-red-300" role="alert">
-            {error}
-          </p>
-        )}
-
-        <div className="flex flex-col-reverse justify-end gap-3 border-t border-[#333] pt-4 sm:flex-row">
-          <button
-            type="button"
-            disabled={pending}
-            onClick={onCancel}
-            className="secondary-button text-sm !px-4 !py-2"
-          >
+        <div className="dialog-foot">
+          <button type="button" disabled={pending} onClick={onCancel} className="btn btn-ghost">
             Annuler
           </button>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={handleConfirm}
-            className="primary-button text-sm !px-4 !py-2"
-          >
-            {pending ? "Enregistrement..." : "Confirmer la vente"}
+          <button type="button" disabled={pending} onClick={handleConfirm} className="btn btn-primary">
+            {pending ? "Enregistrement…" : "Confirmer la vente"}
           </button>
         </div>
       </section>

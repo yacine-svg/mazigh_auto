@@ -14,11 +14,11 @@ export function CarImage({ src, alt, fill, className, ...props }: CarImageProps)
       <div
         role="img"
         aria-label={alt}
-        className={`flex items-center justify-center bg-gray-300 text-gray-500 ${
+        className={`flex items-center justify-center bg-surface-2 text-fg-3 ${
           fill ? "absolute inset-0" : "h-full w-full"
         } ${className ?? ""}`}
       >
-        <Car className="h-10 w-10" aria-hidden="true" />
+        <Car className="h-10 w-10 opacity-60" aria-hidden="true" />
       </div>
     );
   }

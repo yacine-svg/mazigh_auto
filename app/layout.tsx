@@ -1,15 +1,25 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Archivo, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// Variable width axis: expanded for headlines, condensed for big numbers.
+const display = Archivo({
+  variable: "--font-display-face",
+  subsets: ["latin"],
+  axes: ["wdth"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,16 +39,23 @@ export const metadata: Metadata = {
     title: "MAZIGH AUTO | Showroom Kecherid Auto",
     description: "Achat, Vente et Échange de véhicules à El Khroub, Constantine.",
     images: [{ url: "/logo.png" }],
+    locale: "fr_DZ",
+    type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#070707",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${display.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

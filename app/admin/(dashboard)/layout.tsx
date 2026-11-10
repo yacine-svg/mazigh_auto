@@ -1,9 +1,9 @@
 import { Suspense, type ReactNode } from "react";
-import Link from "next/link";
 import { requireShowroomOwner } from "@/app/data/admin-auth.server";
-import { Logo } from "@/app/components/Logo";
-import { signOutAction } from "../auth-actions";
-import { ChartNoAxesCombined } from "lucide-react";
+import { getAdminVehicles } from "@/app/data/vehicles.server";
+import { AdminShell, type AdminSearchItem } from "@/app/components/admin/AdminShell";
+import { formatPriceDZD } from "@/app/data/cars";
+import { stockDays } from "@/app/components/admin/metrics";
 
 export const instant = false;
 
@@ -13,51 +13,50 @@ type ProtectedAdminLayoutProps = {
 
 async function OwnerDashboard({ children }: ProtectedAdminLayoutProps) {
   const owner = await requireShowroomOwner();
+  const result = await getAdminVehicles();
+  const cars = result.data ?? [];
+
+  const searchIndex: AdminSearchItem[] = cars.map((car) => ({
+    id: car.id,
+    label: `${car.marque} ${car.modele}${car.version ? ` ${car.version}` : ""}`,
+    sub: `${car.annee} · ${formatPriceDZD(car.prix)} · ${car.statut}`,
+    href: `/admin/voitures/${car.id}/modifier`,
+    image: car.cover_image_url || car.images[0]?.url || null,
+    keywords: [car.marque, car.modele, car.version, car.couleur, car.slug, String(car.annee)]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase("fr"),
+  }));
+
+  const unsold = cars.filter((c) => c.statut === "disponible" || c.statut === "reservee");
+  const counts = {
+    stock: unsold.length,
+    reserved: cars.filter((c) => c.statut === "reservee").length,
+    drafts: cars.filter((c) => c.statut === "brouillon").length,
+    aging: unsold.filter((c) => (stockDays(c) ?? 0) > 60).length,
+  };
 
   return (
-    <>
-      <header className="site-header">
-        <div className="content-width header-inner admin-header-inner">
-          <Logo href="/admin" size="md" />
-
-          <nav className="main-nav" aria-label="Navigation administration">
-            <Link href="/admin">Tableau de bord</Link>
-            <Link href="/admin/voitures/nouveau">Ajouter un véhicule</Link>
-            <Link href="/admin/finances" className="inline-flex items-center gap-1.5">
-              <ChartNoAxesCombined className="h-4 w-4" />
-              Finances
-            </Link>
-            <Link href="/" target="_blank">Voir le site public ↗</Link>
-          </nav>
-
-          <div className="admin-header-actions">
-            {owner.email && <span className="admin-owner-email">{owner.email}</span>}
-            <form action={signOutAction}>
-              <button className="secondary-button" type="submit">
-                Se déconnecter
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
+    <AdminShell email={owner.email} searchIndex={searchIndex} counts={counts}>
       {children}
-    </>
+    </AdminShell>
   );
 }
 
-export default function ProtectedAdminLayout({
-  children,
-}: ProtectedAdminLayoutProps) {
+function ShellFallback() {
   return (
-    <Suspense
-      fallback={
-        <main className="admin-auth-page">
-          <p className="vehicle-data-message" role="status">
-            Vérification de l’accès...
-          </p>
-        </main>
-      }
-    >
+    <div className="adm grid min-h-screen place-items-center">
+      <p className="flex items-center gap-3 text-sm text-fg-3" role="status">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-brand" />
+        Vérification de l&apos;accès…
+      </p>
+    </div>
+  );
+}
+
+export default function ProtectedAdminLayout({ children }: ProtectedAdminLayoutProps) {
+  return (
+    <Suspense fallback={<ShellFallback />}>
       <OwnerDashboard>{children}</OwnerDashboard>
     </Suspense>
   );

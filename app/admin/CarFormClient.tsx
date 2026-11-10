@@ -40,6 +40,17 @@ import {
   LockKeyhole,
 } from "lucide-react";
 
+const FORM_SECTIONS = [
+  ["identification", "Identification", CarIcon],
+  ["technique", "Technique", Settings2],
+  ["prix", "Prix & publication", BadgeDollarSign],
+  ["finances", "Privé", LockKeyhole],
+  ["photos", "Photos", Camera],
+  ["options", "Équipements", Sparkles],
+  ["description", "Description", FileText],
+  ["avance", "Avancé", SlidersHorizontal],
+] as const;
+
 type CarFormImageItem = {
   id: string; // internal unique key
   url: string;
@@ -370,7 +381,7 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
 
       if (result.success) {
         router.refresh();
-        router.replace(mode === "edit" ? `/admin?updated=${Date.now()}` : `/admin?created=${Date.now()}`);
+        router.replace(mode === "edit" ? `/admin/voitures?updated=${Date.now()}` : `/admin/voitures?created=${Date.now()}`);
       } else {
         setGeneralError(result.message || "Une erreur est survenue lors de l'enregistrement.");
         if (result.fieldErrors) setFieldErrors(result.fieldErrors);
@@ -379,23 +390,33 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto pb-16">
+    <form onSubmit={handleSubmit} className="grid items-start gap-5 xl:grid-cols-[210px_minmax(0,1fr)]">
+      <nav className="form-nav sticky top-20 hidden xl:grid" aria-label="Sections du formulaire">
+        <p className="adm-sb-label !px-2.5">Sections</p>
+        {FORM_SECTIONS.map(([sid, label, Icon]) => (
+          <a key={sid} href={`#form-${sid}`}>
+            <Icon aria-hidden="true" />
+            {label}
+          </a>
+        ))}
+      </nav>
+      <div className="min-w-0 space-y-4">
       {generalError && (
-        <div className="p-4 bg-red-950/70 border border-red-500 rounded-xl text-red-200 text-sm">
+        <div className="alert alert-bad" role="alert">
           {generalError}
         </div>
       )}
 
       {/* SECTION 1: IDENTIFICATION */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-6">
-        <h2 className="text-xl font-bold text-white border-b border-[#262626] pb-3 flex items-center gap-2">
-          <CarIcon className="w-5 h-5 text-[var(--primary)]" /> Identification du Véhicule
+      <div id="form-identification" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6">
+        <h2 className="flex items-center gap-2.5 border-b border-line pb-4 text-base font-semibold">
+          <CarIcon className="h-[1.1rem] w-[1.1rem] text-brand" /> Identification du Véhicule
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Marque <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Marque <span className="req">*</span>
             </label>
             <input
               type="text"
@@ -403,16 +424,15 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               value={marque}
               onChange={(e) => setMarque(e.target.value)}
               placeholder="ex: Volkswagen, BMW, Renault"
-              className={`w-full bg-[#1E1E1E] border ${
-                fieldErrors.marque ? "border-red-500" : "border-[#333]"
-              } rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]`}
+              className="field"
+              aria-invalid={Boolean(fieldErrors.marque)}
             />
-            {fieldErrors.marque && <p className="text-xs text-red-400 mt-1">{fieldErrors.marque}</p>}
+            {fieldErrors.marque && <p className="field-error">{fieldErrors.marque}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Modèle <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Modèle <span className="req">*</span>
             </label>
             <input
               type="text"
@@ -420,29 +440,28 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               value={modele}
               onChange={(e) => setModele(e.target.value)}
               placeholder="ex: Golf 8, 320d, Clio 4"
-              className={`w-full bg-[#1E1E1E] border ${
-                fieldErrors.modele ? "border-red-500" : "border-[#333]"
-              } rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]`}
+              className="field"
+              aria-invalid={Boolean(fieldErrors.modele)}
             />
-            {fieldErrors.modele && <p className="text-xs text-red-400 mt-1">{fieldErrors.modele}</p>}
+            {fieldErrors.modele && <p className="field-error">{fieldErrors.modele}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">Version / Finition</label>
+            <label className="label">Version / Finition</label>
             <input
               type="text"
               value={version}
               onChange={(e) => setVersion(e.target.value)}
               placeholder="ex: R-Line, GTD, M Sport, GT Line"
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Année <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Année <span className="req">*</span>
             </label>
             <input
               type="number"
@@ -451,16 +470,16 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               max={SHOWROOM_CONFIG.copyrightYear + 2}
               value={annee}
               onChange={(e) => setAnnee(e.target.value)}
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">Carrosserie</label>
+            <label className="label">Carrosserie</label>
             <select
               value={typeCarrosserie}
               onChange={(e) => setTypeCarrosserie(e.target.value)}
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             >
               {CARROSSERIE_OPTIONS.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -469,11 +488,11 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">État</label>
+            <label className="label">État</label>
             <select
               value={etat}
               onChange={(e) => setEtat(e.target.value as CarCondition)}
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             >
               {ETAT_OPTIONS.map((e) => (
                 <option key={e} value={e}>{e}</option>
@@ -482,11 +501,11 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">Papiers</label>
+            <label className="label">Papiers</label>
             <select
               value={papiers}
               onChange={(e) => setPapiers(e.target.value)}
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             >
               {PAPIERS_OPTIONS.map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -497,15 +516,15 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
       </div>
 
       {/* SECTION 2: MOTORISATION & TECHNIQUE */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-6">
-        <h2 className="text-xl font-bold text-white border-b border-[#262626] pb-3 flex items-center gap-2">
-          <Settings2 className="w-5 h-5 text-[var(--primary)]" /> Caractéristiques Techniques
+      <div id="form-technique" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6">
+        <h2 className="flex items-center gap-2.5 border-b border-line pb-4 text-base font-semibold">
+          <Settings2 className="h-[1.1rem] w-[1.1rem] text-brand" /> Caractéristiques Techniques
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Kilométrage (km) <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Kilométrage (km) <span className="req">*</span>
             </label>
             <input
               type="number"
@@ -514,18 +533,18 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               value={kilometrage}
               onChange={(e) => setKilometrage(e.target.value)}
               placeholder="ex: 45000"
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Carburant <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Carburant <span className="req">*</span>
             </label>
             <select
               value={carburant}
               onChange={(e) => setCarburant(e.target.value as CarFuel)}
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             >
               {CARBURANT_OPTIONS.map((fuel) => (
                 <option key={fuel} value={fuel}>{fuel}</option>
@@ -534,13 +553,13 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Boîte de vitesses <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Boîte de vitesses <span className="req">*</span>
             </label>
             <select
               value={boite}
               onChange={(e) => setBoite(e.target.value as CarTransmission)}
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             >
               {BOITE_OPTIONS.map((b) => (
                 <option key={b} value={b}>{b}</option>
@@ -551,61 +570,61 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">Moteur</label>
+            <label className="label">Moteur</label>
             <input
               type="text"
               value={moteur}
               onChange={(e) => setMoteur(e.target.value)}
               placeholder="ex: 2.0 TDI, 1.6 HDi"
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">Cylindrée</label>
+            <label className="label">Cylindrée</label>
             <input
               type="text"
               value={cylindree}
               onChange={(e) => setCylindree(e.target.value)}
               placeholder="ex: 1.6L ou 1968 cc"
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">Puissance</label>
+            <label className="label">Puissance</label>
             <input
               type="text"
               value={puissance}
               onChange={(e) => setPuissance(e.target.value)}
               placeholder="ex: 150 ch ou 7 CV"
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">Couleur</label>
+            <label className="label">Couleur</label>
             <input
               type="text"
               value={couleur}
               onChange={(e) => setCouleur(e.target.value)}
               placeholder="ex: Noir, Gris Nardo, Blanc"
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             />
           </div>
         </div>
       </div>
 
       {/* SECTION 3: PRIX, STATUT & PUBLICATION */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-6">
-        <h2 className="text-xl font-bold text-white border-b border-[#262626] pb-3 flex items-center gap-2">
-          <BadgeDollarSign className="w-5 h-5 text-[var(--primary)]" /> Prix & Publication
+      <div id="form-prix" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6">
+        <h2 className="flex items-center gap-2.5 border-b border-line pb-4 text-base font-semibold">
+          <BadgeDollarSign className="h-[1.1rem] w-[1.1rem] text-brand" /> Prix & Publication
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Prix (en Dinars Algériens - DA) <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Prix (en Dinars Algériens - DA) <span className="req">*</span>
             </label>
             <input
               type="number"
@@ -614,30 +633,30 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               value={prix}
               onChange={(e) => setPrix(e.target.value)}
               placeholder="ex: 3500000"
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)] font-bold"
+              className="field font-semibold"
             />
           </div>
 
           <div className="flex items-center gap-3 pt-6">
-            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
+            <label className="check">
               <input
                 type="checkbox"
                 checked={negotiable}
                 onChange={(e) => setNegotiable(e.target.checked)}
-                className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)]"
+                className="h-4 w-4 accent-[var(--brand)]"
               />
               <span>Prix Négociable</span>
             </label>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-              Statut d&apos;affichage <span className="text-[var(--primary)]">*</span>
+            <label className="label">
+              Statut d&apos;affichage <span className="req">*</span>
             </label>
             <select
               value={statut}
               onChange={(e) => handleStatusChange(e.target.value as CarStatus)}
-              className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[var(--primary)]"
+              className="field"
             >
               <option value="disponible">Disponible (visible sur le site)</option>
               <option value="reservee">Réservée (badge réservée)</option>
@@ -647,36 +666,36 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               <option value="brouillon">Brouillon (invisible au public)</option>
             </select>
             {fieldErrors.statut && (
-              <p className="mt-1 text-xs text-red-400" role="alert">{fieldErrors.statut}</p>
+              <p className="field-error" role="alert">{fieldErrors.statut}</p>
             )}
           </div>
         </div>
 
         <div className="pt-2">
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
+          <label className="check">
             <input
               type="checkbox"
               checked={isFeatured}
               onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 rounded text-yellow-400 focus:ring-yellow-400"
+              className="h-4 w-4 accent-[var(--warn)]"
             />
-            <span className="font-semibold text-yellow-300">⭐ Afficher en vedette sur la page d&apos;accueil</span>
+            <span className="font-semibold text-warn">★ Afficher en vedette sur la page d&apos;accueil</span>
           </label>
         </div>
       </div>
 
       {/* SECTION 4: INFORMATIONS FINANCIÈRES PRIVÉES */}
-      <div className="space-y-5 rounded-2xl border border-amber-900/50 bg-[#141414] p-6">
-        <h2 className="flex items-center gap-2 border-b border-[#262626] pb-3 text-xl font-bold text-white">
-          <LockKeyhole className="h-5 w-5 text-amber-400" />
+      <div id="form-finances" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6" style={{ borderColor: "color-mix(in srgb, var(--warn) 35%, var(--line))" }}>
+        <h2 className="flex items-center gap-2.5 border-b border-line pb-4 text-base font-semibold">
+          <LockKeyhole className="h-[1.1rem] w-[1.1rem] text-warn" />
           Informations privées (invisibles pour les clients)
         </h2>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-fg-3">
           Ces données sont réservées à l&apos;administration et ne sont jamais affichées sur le site public.
         </p>
         <div className="grid gap-5 md:grid-cols-2">
-          <div className="space-y-1.5 text-xs font-semibold text-gray-300">
-            <label htmlFor="car-purchase-price">Prix d&apos;achat (DA)</label>
+          <div className="space-y-1.5">
+            <label htmlFor="car-purchase-price" className="label">Prix d&apos;achat (DA)</label>
             <input
               id="car-purchase-price"
               type="number"
@@ -697,13 +716,13 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
                     : previous,
                 );
               }}
-              className="w-full rounded-lg border border-[#333] bg-[#1E1E1E] p-2.5 text-sm text-white focus:border-[var(--primary)] focus:outline-none"
+              className="field"
             />
             {fieldErrors.prix_achat && (
-              <span className="block text-xs text-red-400" role="alert">{fieldErrors.prix_achat}</span>
+              <span className="field-error block" role="alert">{fieldErrors.prix_achat}</span>
             )}
             {saleDetails && statut === "vendue" && (
-              <label className="flex items-center gap-2 text-xs font-normal text-gray-400">
+              <label className="check !text-xs">
                 <input
                   type="checkbox"
                   checked={saleDetails.achat_inconnu}
@@ -725,8 +744,8 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               </label>
             )}
           </div>
-          <div className="space-y-1.5 text-xs font-semibold text-gray-300">
-            <label htmlFor="car-fees">Frais (réparations, papiers) (DA)</label>
+          <div className="space-y-1.5">
+            <label htmlFor="car-fees" className="label">Frais (réparations, papiers) (DA)</label>
             <input
               id="car-fees"
               type="number"
@@ -747,13 +766,13 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
                     : previous,
                 );
               }}
-              className="w-full rounded-lg border border-[#333] bg-[#1E1E1E] p-2.5 text-sm text-white focus:border-[var(--primary)] focus:outline-none"
+              className="field"
             />
             {fieldErrors.frais && (
-              <span className="block text-xs text-red-400" role="alert">{fieldErrors.frais}</span>
+              <span className="field-error block" role="alert">{fieldErrors.frais}</span>
             )}
             {saleDetails && statut === "vendue" && (
-              <label className="flex items-center gap-2 text-xs font-normal text-gray-400">
+              <label className="check !text-xs">
                 <input
                   type="checkbox"
                   checked={saleDetails.frais_inconnus}
@@ -775,8 +794,8 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               </label>
             )}
           </div>
-          <label className="space-y-1.5 text-xs font-semibold text-gray-300 md:col-span-2">
-            Notes privées
+          <label className="md:col-span-2">
+            <span className="label">Notes privées</span>
             <textarea
               rows={3}
               maxLength={5000}
@@ -787,22 +806,22 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
                   previous ? { ...previous, notes: event.target.value } : previous,
                 );
               }}
-              className="w-full rounded-lg border border-[#333] bg-[#1E1E1E] p-2.5 text-sm text-white focus:border-[var(--primary)] focus:outline-none"
+              className="field"
             />
             {fieldErrors.finance_notes && (
-              <span className="block text-xs text-red-400" role="alert">{fieldErrors.finance_notes}</span>
+              <span className="field-error block" role="alert">{fieldErrors.finance_notes}</span>
             )}
           </label>
         </div>
       </div>
 
       {/* SECTION 5: PHOTOS & GALERIE */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-6">
-        <h2 className="text-xl font-bold text-white border-b border-[#262626] pb-3 flex items-center justify-between">
+      <div id="form-photos" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6">
+        <h2 className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-4 text-base font-semibold">
           <span className="flex items-center gap-2">
-            <Camera className="w-5 h-5 text-[var(--primary)]" /> Ajouter des photos ({images.length})
+            <Camera className="h-[1.1rem] w-[1.1rem] text-brand" /> Ajouter des photos ({images.length})
           </span>
-          <span className="text-xs text-gray-400 font-normal">Formats : JPG, PNG, WebP (max 10 Mo)</span>
+          <span className="text-xs text-fg-3 font-normal">Formats : JPG, PNG, WebP (max 10 Mo)</span>
         </h2>
 
         <div
@@ -812,8 +831,8 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
           }}
           onDragLeave={() => setIsDraggingFiles(false)}
           onDrop={handleFileDrop}
-          className={`border-2 border-dashed rounded-xl p-6 text-center space-y-3 bg-[#111] transition-colors ${
-            isDraggingFiles ? "border-[var(--primary)]" : "border-[#333] hover:border-[var(--primary)]"
+          className={`space-y-4 rounded-2xl border-2 border-dashed bg-surface-2 p-8 text-center transition-colors ${
+            isDraggingFiles ? "border-brand bg-brand-soft" : "border-line-2 hover:border-brand"
           }`}
         >
           <input
@@ -827,17 +846,17 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
           />
 
           <div className="space-y-2">
-            <p className="text-sm text-gray-300 font-medium">
+            <p className="text-sm text-fg-2 font-medium">
               Déposez vos photos ici ou choisissez-les depuis votre appareil
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-fg-3">
               Compression automatique avant l&apos;envoi vers Supabase Storage pour un affichage ultra rapide
             </p>
           </div>
 
           <label
             htmlFor="car-device-file-input"
-            className={`primary-button cursor-pointer inline-flex items-center gap-2 text-sm !py-2.5 !px-5 ${
+            className={`btn btn-primary cursor-pointer ${
               isUploadingFiles ? "opacity-50 pointer-events-none" : ""
             }`}
           >
@@ -845,7 +864,7 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               "Envoi et compression en cours..."
             ) : (
               <>
-                <Upload className="w-4 h-4 mr-1" />
+                <Upload aria-hidden="true" />
                 Choisir des photos
               </>
             )}
@@ -853,7 +872,7 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
         </div>
 
         {fieldErrors.images && (
-          <p className="text-xs text-red-400" role="alert">{fieldErrors.images}</p>
+          <p className="field-error" role="alert">{fieldErrors.images}</p>
         )}
 
         {/* Uploaded Gallery Grid */}
@@ -862,8 +881,8 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
             {images.map((img, index) => (
               <div
                 key={img.id}
-                className={`relative rounded-xl overflow-hidden bg-black border-2 transition-all group ${
-                  img.is_cover ? "border-[var(--primary)] ring-2 ring-[var(--primary)]/30" : "border-[#333]"
+                className={`relative rounded-xl overflow-hidden bg-surface-3 border-2 transition-all group ${
+                  img.is_cover ? "border-brand ring-2 ring-brand/30" : "border-line-2"
                 }`}
               >
                 <div className="aspect-video relative">
@@ -877,19 +896,19 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
 
                 {/* Cover badge */}
                 {img.is_cover && (
-                  <span className="absolute top-2 left-2 bg-[var(--primary)] text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow">
+                  <span className="pill no-dot absolute left-2 top-2 border-transparent bg-brand text-fg">
                     Couverture
                   </span>
                 )}
 
                 {/* Controls Overlay */}
-                <div className="p-2 bg-[#1A1A1A] flex items-center justify-between text-xs border-t border-[#333]">
+                <div className="p-2 bg-surface-2 flex items-center justify-between text-xs border-t border-line-2">
                   <div className="flex gap-1">
                     <button
                       type="button"
                       disabled={index === 0}
                       onClick={() => moveImage(index, "up")}
-                      className="px-1.5 py-0.5 bg-[#2A2A2A] rounded hover:bg-[#333] disabled:opacity-30"
+                      className="px-1.5 py-0.5 bg-surface-3 rounded hover:bg-line-2 disabled:opacity-30"
                       title="Déplacer vers la gauche"
                     >
                       ←
@@ -898,7 +917,7 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
                       type="button"
                       disabled={index === images.length - 1}
                       onClick={() => moveImage(index, "down")}
-                      className="px-1.5 py-0.5 bg-[#2A2A2A] rounded hover:bg-[#333] disabled:opacity-30"
+                      className="px-1.5 py-0.5 bg-surface-3 rounded hover:bg-line-2 disabled:opacity-30"
                       title="Déplacer vers la droite"
                     >
                       →
@@ -909,7 +928,7 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
                     <button
                       type="button"
                       onClick={() => setCoverImage(img.id)}
-                      className="text-[10px] text-gray-300 hover:text-[var(--primary)] underline"
+                      className="text-[10px] text-fg-2 hover:text-brand underline"
                     >
                       Définir couv.
                     </button>
@@ -918,7 +937,7 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
                   <button
                     type="button"
                     onClick={() => removeImage(img.id)}
-                    className="text-red-400 hover:text-red-300 font-bold p-1 rounded hover:bg-red-950/40"
+                    className="text-bad hover:text-bad font-bold p-1 rounded hover:bg-bad-soft"
                     title="Supprimer la photo"
                     aria-label="Supprimer la photo"
                   >
@@ -932,15 +951,15 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
       </div>
 
       {/* SECTION 6: OPTIONS & ÉQUIPEMENTS */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-6">
-        <h2 className="text-xl font-bold text-white border-b border-[#262626] pb-3 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[var(--primary)]" /> Équipements & Options
+      <div id="form-options" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6">
+        <h2 className="flex items-center gap-2.5 border-b border-line pb-4 text-base font-semibold">
+          <Sparkles className="h-[1.1rem] w-[1.1rem] text-brand" /> Équipements & Options
         </h2>
 
         <button
           type="button"
           onClick={toggleAllSuggestedOptions}
-          className="secondary-button min-h-11 touch-manipulation text-xs !py-2 !px-3 inline-flex items-center gap-1.5"
+          className="btn btn-ghost btn-sm touch-manipulation inline-flex items-center gap-1.5"
         >
           {allSuggestedOptionsSelected ? (
             <>
@@ -964,13 +983,10 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
                 key={opt}
                 type="button"
                 onClick={() => toggleOption(opt)}
-                className={`min-h-11 touch-manipulation text-xs font-medium px-3 py-1.5 rounded-full border transition-colors cursor-pointer inline-flex items-center gap-1 ${
-                  selected
-                    ? "bg-[var(--primary)] border-[var(--primary)] text-white font-bold"
-                    : "bg-[#1E1E1E] border-[#333] text-gray-300 hover:border-gray-500"
-                }`}
+                aria-pressed={selected}
+                className="chip touch-manipulation"
               >
-                {selected ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5 text-gray-400" />}
+                {selected ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5 opacity-60" />}
                 <span>{opt}</span>
               </button>
             );
@@ -990,12 +1006,12 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               }
             }}
             placeholder="Ajouter une option personnalisée..."
-            className="flex-1 bg-[#1E1E1E] border border-[#333] rounded-lg p-2 text-xs text-white focus:outline-none focus:border-[var(--primary)]"
+            className="field field-sm flex-1"
           />
           <button
             type="button"
             onClick={addCustomOption}
-            className="secondary-button min-h-11 touch-manipulation text-xs !py-2 !px-3"
+            className="btn btn-ghost btn-sm touch-manipulation"
           >
             Ajouter
           </button>
@@ -1009,13 +1025,13 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
               .map((custom) => (
                 <span
                   key={custom}
-                  className="inline-flex items-center gap-1.5 text-xs bg-red-950/60 border border-red-500/40 text-red-200 px-2.5 py-1 rounded-full"
+                  className="pill no-dot status-badge-vendue !h-auto !py-1 normal-case tracking-normal"
                 >
                   {custom}
                   <button
                     type="button"
                     onClick={() => toggleOption(custom)}
-                    className="flex min-h-11 min-w-11 touch-manipulation items-center justify-center hover:text-white"
+                    className="flex min-h-11 min-w-11 touch-manipulation items-center justify-center hover:text-fg"
                     aria-label={`Supprimer ${custom}`}
                   >
                     <X className="w-3.5 h-3.5" />
@@ -1027,11 +1043,11 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
       </div>
 
       {/* SECTION 7: DESCRIPTION & REMARQUES SUR L'ÉTAT */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-4">
-        <h2 className="text-xl font-bold text-white border-b border-[#262626] pb-3 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-[var(--primary)]" /> Description & État (Accidents, Retouches, etc.)
+      <div id="form-description" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6">
+        <h2 className="flex items-center gap-2.5 border-b border-line pb-4 text-base font-semibold">
+          <FileText className="h-[1.1rem] w-[1.1rem] text-brand" /> Description & État (Accidents, Retouches, etc.)
         </h2>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-fg-3">
           Détaillez ici l&apos;état exact du véhicule : présence de retouches de peinture (sbigha), pièces changées, carnet d&apos;entretien, état des pneus ou tout détail important pour l&apos;acheteur.
         </p>
         <textarea
@@ -1039,17 +1055,17 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Ex: Première main, carnet d'entretien à jour. Zéro retouche de peinture, suspension neuve, pneus neufs. Rien à prévoir..."
-          className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[var(--primary)] leading-relaxed"
+          className="field"
         />
       </div>
 
       {/* SECTION 8: PARAMÈTRES AVANCÉS */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-gray-400" /> Paramètres avancés (Optionnel)
+      <div id="form-avance" className="panel scroll-mt-24 space-y-5 p-5 sm:p-6">
+        <h2 className="flex items-center gap-2.5 border-b border-line pb-4 text-base font-semibold">
+          <SlidersHorizontal className="h-[1.1rem] w-[1.1rem] text-brand" /> Paramètres avancés (Optionnel)
         </h2>
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
+          <label className="label">
             Identifiant d&apos;URL personnalisé (Slug)
           </label>
           <input
@@ -1057,31 +1073,32 @@ export function CarFormClient({ initialCar, initialFinance, mode }: CarFormClien
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder="Laisser vide pour générer automatiquement (ex: volkswagen-golf-8-2022)"
-            className="w-full bg-[#1E1E1E] border border-[#333] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary)] font-mono"
+            className="field font-mono text-xs"
           />
-          <p className="text-[11px] text-gray-500 mt-1">
+          <p className="text-[11px] text-fg-3 mt-1">
             Si laissé vide, le système créera automatiquement un slug propre basé sur la marque, le modèle et l&apos;année.
           </p>
         </div>
       </div>
 
       {/* SUBMIT BUTTON BAR */}
-      <div className="flex items-center justify-between gap-4 pt-4 border-t border-[#333]">
-        <Link href="/admin" className="secondary-button text-sm !py-2.5 !px-5">
-          ← Retour à l&apos;inventaire
+      <div className="panel sticky bottom-3 z-20 flex flex-wrap items-center justify-between gap-3 p-3 shadow-[var(--shadow-lg)] backdrop-blur">
+        <Link href="/admin/voitures" className="btn btn-ghost">
+          Annuler
         </Link>
-
-        <button
-          type="submit"
-          disabled={isPending || isUploadingFiles}
-          className="primary-button text-base !py-3 !px-8 min-w-[200px]"
-        >
-          {isPending
-            ? "Enregistrement en cours..."
-            : mode === "edit"
-            ? "Mettre à jour la voiture"
-            : "Créer et publier la voiture"}
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="hidden text-xs text-fg-3 sm:inline">
+            {images.length} photo{images.length !== 1 ? "s" : ""} · {selectedOptions.length} option{selectedOptions.length !== 1 ? "s" : ""}
+          </span>
+          <button type="submit" disabled={isPending || isUploadingFiles} className="btn btn-primary btn-lg">
+            {isPending
+              ? "Enregistrement en cours…"
+              : mode === "edit"
+              ? "Mettre à jour la voiture"
+              : "Créer et publier la voiture"}
+          </button>
+        </div>
+      </div>
       </div>
 
       {saleDialogOpen && initialCar && (
