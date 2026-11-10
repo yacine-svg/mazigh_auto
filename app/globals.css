@@ -691,7 +691,7 @@ select.field option {
     linear-gradient(90deg, rgba(7, 7, 7, 0.75) 0%, rgba(7, 7, 7, 0.1) 55%, transparent 100%);
 }
 .hero-title {
-  font-size: clamp(3.2rem, 11.5vw, 11.5rem);
+  font-size: clamp(3.2rem, 9vw, 8.25rem);
 }
 .line-mask {
   display: block;
@@ -733,7 +733,8 @@ select.field option {
 
 .spot-card {
   position: relative;
-  width: min(100%, 23rem);
+  width: min(100%, 22rem);
+  flex: none;
   padding: 1.1rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;

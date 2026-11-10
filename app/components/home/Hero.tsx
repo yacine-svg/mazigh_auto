@@ -58,7 +58,7 @@ export function Hero({ spotlight, stockCount }: HeroProps) {
       </div>
       <div className="hero-shade" aria-hidden="true" />
 
-      <div className="wrap relative flex min-h-[100svh] flex-col justify-end pb-10 pt-32 md:pb-14">
+      <div className="wrap relative flex min-h-[100svh] flex-col justify-end pb-10 pt-28 md:pb-12">
         <p className="hero-fade eyebrow text-fg-2">
           {SHOWROOM_CONFIG.city} · Algérie · {SHOWROOM_CONFIG.subtitle}
         </p>
@@ -88,7 +88,7 @@ export function Hero({ spotlight, stockCount }: HeroProps) {
               </Magnetic>
             </div>
 
-            <dl className="hero-fade mt-12 grid max-w-lg grid-cols-3 border-t border-line pt-5">
+            <dl className="hero-fade mt-10 grid max-w-lg grid-cols-3 border-t border-line pt-5">
               <div>
                 <dt className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fg-3">Au parc</dt>
                 <dd className="display-condensed mt-1 text-4xl">{stockCount}</dd>
@@ -105,7 +105,7 @@ export function Hero({ spotlight, stockCount }: HeroProps) {
           </div>
 
           {spotlight && (
-            <Link href={spotHref} className="hero-card spot-card group block" data-cursor="Voir">
+            <Link href={spotHref} className="hero-card spot-card group block lg:w-[22rem]" data-cursor="Voir">
               <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-surface-2">
                 <CarImage
                   src={spotCover}
@@ -135,11 +135,6 @@ export function Hero({ spotlight, stockCount }: HeroProps) {
           )}
         </div>
 
-        <div className="hero-fade mt-12 hidden md:block">
-          <span className="scroll-cue">
-            <i aria-hidden="true" /> Faites défiler
-          </span>
-        </div>
       </div>
     </section>
   );
