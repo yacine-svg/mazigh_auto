@@ -3,6 +3,7 @@
 import { CarImage } from "./CarImage";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLenis } from "lenis/react";
 
 type GalleryImageItem = string | { url: string };
 
@@ -16,6 +17,7 @@ export function VehicleGallery({ images: rawImages, vehicleName }: VehicleGaller
     .map((img) => (typeof img === "string" ? img : img.url));
 
   const [isOpen, setIsOpen] = useState(false);
+  const lenis = useLenis();
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const didSwipe = useRef(false);
@@ -78,10 +80,12 @@ export function VehicleGallery({ images: rawImages, vehicleName }: VehicleGaller
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    lenis?.stop();
     return () => {
       document.body.style.overflow = previousOverflow;
+      lenis?.start();
     };
-  }, [isOpen]);
+  }, [isOpen, lenis]);
 
   const openImage = (index: number) => {
     if (!hasImages) {
@@ -141,6 +145,7 @@ export function VehicleGallery({ images: rawImages, vehicleName }: VehicleGaller
                 type="button"
                 className="gallery-open-button"
                 onClick={handleMainImageClick}
+                data-cursor="Zoom"
                 aria-label={`Ouvrir la photo ${currentIndex + 1} de ${vehicleName}`}
               >
                 <CarImage
@@ -209,6 +214,7 @@ export function VehicleGallery({ images: rawImages, vehicleName }: VehicleGaller
       {isOpen && hasImages && (
         <div
           className="gallery-lightbox"
+          data-lenis-prevent
           role="dialog"
           aria-modal="true"
           aria-label={`Vue de ${vehicleName}`}

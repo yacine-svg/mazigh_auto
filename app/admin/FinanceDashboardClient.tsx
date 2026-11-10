@@ -19,7 +19,11 @@ import {
   TrendingUp,
   CarFront,
   Download,
+  Warehouse,
+  Receipt,
 } from "lucide-react";
+import { Kpi, Panel } from "@/app/components/admin/ui";
+import { formatCompact } from "@/app/components/admin/metrics";
 import type { CarFinance, FinanceCarSummary } from "@/app/data/car-finances";
 import { formatPriceDZD } from "@/app/data/cars";
 
@@ -260,15 +264,12 @@ export function FinanceDashboardClient({
     URL.revokeObjectURL(href);
   };
 
-  const cardClass =
-    "rounded-xl border border-[#262626] bg-[#141414] p-4 sm:p-5";
-
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl border border-[#262626] bg-[#141414] px-5 py-16 text-center">
-        <ChartNoAxesCombined className="mx-auto h-10 w-10 text-gray-500" />
-        <h2 className="mt-4 text-lg font-semibold text-white">Aucune vente enregistrée</h2>
-        <p className="mt-1 text-sm text-gray-400">
+      <div className="panel px-5 py-16 text-center">
+        <ChartNoAxesCombined className="mx-auto h-10 w-10 text-fg-3" aria-hidden="true" />
+        <h2 className="mt-4 text-lg font-semibold">Aucune vente enregistrée</h2>
+        <p className="mt-1 text-sm text-fg-3">
           Les ventes confirmées depuis la gestion des véhicules apparaîtront ici.
         </p>
       </div>
@@ -276,28 +277,19 @@ export function FinanceDashboardClient({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 rounded-xl border border-[#262626] bg-[#141414] p-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="space-y-1 text-xs font-medium text-gray-400">
-            Année
-            <select
-              value={selectedYear}
-              onChange={(event) => setSelectedYear(Number(event.target.value))}
-              className="block w-full rounded-lg border border-[#333] bg-[#1E1E1E] px-3 py-2 text-sm text-white"
-            >
-              {years.map((year) => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </label>
-          <label className="space-y-1 text-xs font-medium text-gray-400">
-            Mois
-            <select
-              value={selectedMonth}
-              onChange={(event) => setSelectedMonth(event.target.value)}
-              className="block w-full rounded-lg border border-[#333] bg-[#1E1E1E] px-3 py-2 text-sm text-white"
-            >
+    <div className="grid gap-4">
+      <div className="panel flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="segmented" role="group" aria-label="Année">
+            {years.slice(0, 4).map((year) => (
+              <button key={year} type="button" aria-pressed={selectedYear === year} onClick={() => setSelectedYear(year)}>
+                {year}
+              </button>
+            ))}
+          </div>
+          <label>
+            <span className="sr-only">Mois</span>
+            <select value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} className="field field-sm min-w-44">
               <option value="all">Toute l&apos;année</option>
               {MONTHS.map((month, index) => (
                 <option key={month} value={String(index + 1).padStart(2, "0")}>
@@ -307,182 +299,122 @@ export function FinanceDashboardClient({
             </select>
           </label>
         </div>
-        <button
-          type="button"
-          onClick={exportCsv}
-          className="secondary-button inline-flex items-center justify-center gap-2 text-sm !px-4 !py-2"
-        >
-          <Download className="h-4 w-4" />
-          Exporter en CSV
+        <button type="button" onClick={exportCsv} className="btn btn-ghost btn-sm">
+          <Download aria-hidden="true" /> Exporter en CSV
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <article className={cardClass}>
-          <CarFront className="h-5 w-5 text-[var(--primary)]" />
-          <p className="mt-3 text-xs uppercase text-gray-400">Voitures vendues</p>
-          <p className="mt-1 text-2xl font-bold text-white">{filteredRows.length}</p>
-        </article>
-        <article className={cardClass}>
-          <BadgeDollarSign className="h-5 w-5 text-[var(--primary)]" />
-          <p className="mt-3 text-xs uppercase text-gray-400">Chiffre d&apos;affaires</p>
-          <p className="mt-1 text-xl font-bold text-white">{formatPriceDZD(totalRevenue)}</p>
-        </article>
-        <article className={cardClass}>
-          <TrendingUp className="h-5 w-5 text-emerald-400" />
-          <p className="mt-3 text-xs uppercase text-gray-400">Bénéfice total</p>
-          <p className={`mt-1 text-xl font-bold ${totalProfit >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            {formatPriceDZD(totalProfit)}
-          </p>
-        </article>
-        <article className={cardClass}>
-          <Percent className="h-5 w-5 text-blue-400" />
-          <p className="mt-3 text-xs uppercase text-gray-400">Marge moyenne</p>
-          <p className="mt-1 text-2xl font-bold text-white">
-            {averageMargin == null ? "—" : `${averageMargin.toFixed(1)} %`}
-          </p>
-        </article>
-        <article className={cardClass}>
-          <BadgeDollarSign className="h-5 w-5 text-amber-400" />
-          <p className="mt-3 text-xs uppercase text-gray-400">Stock au prix d&apos;achat</p>
-          <p className="mt-1 text-xl font-bold text-white">{formatPriceDZD(stockValue)}</p>
-          {stockMissingCostCount > 0 && (
-            <p className="mt-1 text-xs text-gray-500">
-              Coût non renseigné pour {stockMissingCostCount} véhicule(s)
-            </p>
-          )}
-        </article>
+      <div className="kpis">
+        <Kpi accent label="Voitures vendues" icon={<CarFront />} value={filteredRows.length} foot={<span>{selectedMonth === "all" ? `Année ${selectedYear}` : MONTHS[Number(selectedMonth) - 1]}</span>} />
+        <Kpi label="Chiffre d'affaires" icon={<BadgeDollarSign />} value={formatCompact(totalRevenue)} unit="DA" foot={<span>{formatPriceDZD(totalRevenue)}</span>} />
+        <Kpi
+          label="Bénéfice total"
+          icon={<TrendingUp />}
+          value={<span className={totalProfit >= 0 ? "text-ok" : "text-bad"}>{formatCompact(totalProfit)}</span>}
+          unit="DA"
+          foot={<span>{knownCostRows.length} vente(s) au coût connu</span>}
+        />
+        <Kpi label="Marge moyenne" icon={<Percent />} value={averageMargin == null ? "—" : averageMargin.toFixed(1)} unit={averageMargin == null ? undefined : "%"} foot={<span>sur le prix de vente</span>} />
+        <Kpi
+          label="Stock au prix d'achat"
+          icon={<Warehouse />}
+          value={formatCompact(stockValue)}
+          unit="DA"
+          alert={stockMissingCostCount > 0}
+          foot={<span>{stockMissingCostCount > 0 ? `Coût manquant pour ${stockMissingCostCount} véhicule(s)` : `${stockRows.length} véhicule(s) en stock`}</span>}
+        />
       </div>
 
-      <section className="rounded-xl border border-[#262626] bg-[#141414] p-4 sm:p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <ChartNoAxesCombined className="h-5 w-5 text-[var(--primary)]" />
-          <h2 className="font-semibold text-white">Bénéfice par mois — {selectedYear}</h2>
-        </div>
+      <Panel title={`Bénéfice par mois · ${selectedYear}`} icon={<ChartNoAxesCombined />} sub="Calculé sur les ventes dont le prix d'achat et les frais sont connus">
         <div className="overflow-x-auto">
-          <div className="h-[300px] min-w-[680px]">
+          <div className="h-[300px] min-w-[640px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyProfits} margin={{ top: 8, right: 12, left: 8, bottom: 4 }}>
-                <CartesianGrid stroke="#2a2a2a" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" stroke="#9ca3af" tickLine={false} axisLine={false} />
-                <YAxis
-                  stroke="#9ca3af"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={formatCompactDzd}
-                />
+              <BarChart data={monthlyProfits} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid stroke="var(--line)" strokeDasharray="3 4" vertical={false} />
+                <XAxis dataKey="month" stroke="var(--fg-3)" tickLine={false} axisLine={false} fontSize={11} />
+                <YAxis stroke="var(--fg-3)" tickLine={false} axisLine={false} fontSize={11} width={48} tickFormatter={formatCompactDzd} />
                 <Tooltip
-                  cursor={{ fill: "#ffffff0b" }}
+                  cursor={{ fill: "var(--surface-2)" }}
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
                     const entry = payload[0].payload as MonthProfit;
                     return (
-                      <div className="rounded-lg border border-[#444] bg-[#111] p-3 text-sm shadow-xl">
-                        <p className="font-semibold text-white">{entry.month}</p>
-                        <p className={entry.profit >= 0 ? "text-emerald-400" : "text-violet-300"}>
-                          Bénéfice : {formatPriceDZD(entry.profit)}
-                        </p>
-                        <p className="text-gray-300">{entry.salesCount} voiture(s) vendue(s)</p>
+                      <div className="rounded-xl border border-line bg-surface p-3 text-xs shadow-lg">
+                        <p className="font-semibold">{entry.month}</p>
+                        <p className={entry.profit >= 0 ? "text-ok" : "text-bad"}>Bénéfice : {formatPriceDZD(entry.profit)}</p>
+                        <p className="text-fg-2">{entry.salesCount} voiture(s) vendue(s)</p>
                         {entry.knownCostCount < entry.salesCount && (
-                          <p className="text-xs text-gray-500">
-                            {entry.salesCount - entry.knownCostCount} coût(s) manquant(s)
-                          </p>
+                          <p className="text-fg-3">{entry.salesCount - entry.knownCostCount} coût(s) manquant(s)</p>
                         )}
                       </div>
                     );
                   }}
                 />
-                <Bar dataKey="profit" name="Bénéfice" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="profit" name="Bénéfice" radius={[6, 6, 0, 0]} maxBarSize={42}>
                   {monthlyProfits.map((entry) => (
-                    <Cell
-                      key={entry.month}
-                      fill={entry.profit < 0 ? "#8b5cf6" : "var(--primary)"}
-                    />
+                    <Cell key={entry.month} fill={entry.profit < 0 ? "var(--bad)" : "var(--brand)"} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-      </section>
+      </Panel>
 
       {missingCostCount > 0 && (
-        <p className="flex items-start gap-2 rounded-lg border border-amber-700/40 bg-amber-950/30 p-3 text-sm text-amber-200">
-          <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+        <p className="alert alert-warn">
+          <CircleAlert aria-hidden="true" />
           {missingCostCount} vente(s) exclue(s) du calcul des bénéfices, car le prix d&apos;achat ou les frais sont manquants.
         </p>
       )}
 
-      <section className="overflow-hidden rounded-xl border border-[#262626] bg-[#141414]">
-        <h2 className="p-4 font-semibold text-white sm:px-5">Voitures vendues</h2>
+      <Panel title="Voitures vendues" icon={<Receipt />} sub={`${filteredRows.length} vente(s) sur la période`} body={false}>
         {filteredRows.length === 0 ? (
-          <p className="px-5 pb-5 text-sm text-gray-400">
-            Aucune vente enregistrée pour cette période.
-          </p>
+          <p className="px-5 py-10 text-center text-sm text-fg-3">Aucune vente enregistrée pour cette période.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-sm">
-              <thead className="bg-[#1A1A1A] text-xs uppercase tracking-wide text-gray-400">
+          <div className="table-wrap">
+            <table className="table min-w-[860px]">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Voiture</th>
-                  <th className="px-4 py-3">Achat</th>
-                  <th className="px-4 py-3">Frais</th>
-                  <th className="px-4 py-3">Vente</th>
-                  <th className="px-4 py-3">Bénéfice</th>
-                  <th className="px-4 py-3">Marge</th>
+                  <th>Date</th>
+                  <th>Voiture</th>
+                  <th className="!text-right">Achat</th>
+                  <th className="!text-right">Frais</th>
+                  <th className="!text-right">Vente</th>
+                  <th className="!text-right">Bénéfice</th>
+                  <th className="!text-right">Marge</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#262626]">
+              <tbody>
                 {filteredRows.map((row) => {
                   const finance = row.finance;
-                  const hasProfit =
-                    finance?.prix_achat != null &&
-                    finance.frais != null &&
-                    finance.prix_vente != null;
-                  const profit = hasProfit
-                    ? finance.prix_vente! - finance.prix_achat! - finance.frais!
-                    : null;
-                  const margin =
-                    profit !== null && finance?.prix_vente
-                      ? (profit / finance.prix_vente) * 100
-                      : null;
+                  const hasProfit = finance?.prix_achat != null && finance.frais != null && finance.prix_vente != null;
+                  const profit = hasProfit ? finance.prix_vente! - finance.prix_achat! - finance.frais! : null;
+                  const margin = profit !== null && finance?.prix_vente ? (profit / finance.prix_vente) * 100 : null;
                   return (
-                    <tr key={row.id} className="text-gray-300">
-                      <td className="whitespace-nowrap px-4 py-3">
+                    <tr key={row.id}>
+                      <td className="mono whitespace-nowrap text-fg-2">
                         {row.dateKey
-                          ? new Intl.DateTimeFormat("fr-DZ", {
-                              timeZone: "Africa/Algiers",
-                              dateStyle: "medium",
-                            }).format(new Date(`${row.dateKey}T12:00:00+01:00`))
+                          ? new Intl.DateTimeFormat("fr-DZ", { timeZone: "Africa/Algiers", dateStyle: "medium" }).format(
+                              new Date(`${row.dateKey}T12:00:00+01:00`),
+                            )
                           : "—"}
                       </td>
-                      <td className="px-4 py-3 font-medium text-white">
-                        {row.marque} {row.modele} {row.version} ({row.annee})
+                      <td>
+                        <div className="cell-main">{row.marque} {row.modele}</div>
+                        <div className="cell-sub">{row.version} {row.annee}</div>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {finance?.prix_achat == null ? "—" : formatPriceDZD(finance.prix_achat)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {finance?.frais == null ? "—" : formatPriceDZD(finance.frais)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {finance?.prix_vente == null ? "—" : formatPriceDZD(finance.prix_vente)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td className="t-num">{finance?.prix_achat == null ? "—" : formatPriceDZD(finance.prix_achat)}</td>
+                      <td className="t-num">{finance?.frais == null ? "—" : formatPriceDZD(finance.frais)}</td>
+                      <td className="t-num">{finance?.prix_vente == null ? "—" : formatPriceDZD(finance.prix_vente)}</td>
+                      <td className="t-num">
                         {profit == null ? (
-                          <span className="rounded-full bg-amber-950/60 px-2 py-1 text-xs text-amber-200">
-                            coût manquant
-                          </span>
+                          <span className="pill no-dot status-badge-reservee">coût manquant</span>
                         ) : (
-                          <span className={profit >= 0 ? "text-emerald-400" : "text-red-400"}>
-                            {formatPriceDZD(profit)}
-                          </span>
+                          <span className={profit >= 0 ? "text-ok" : "text-bad"}>{formatPriceDZD(profit)}</span>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {margin == null ? "—" : `${margin.toFixed(1)} %`}
-                      </td>
+                      <td className="t-num">{margin == null ? "—" : `${margin.toFixed(1)} %`}</td>
                     </tr>
                   );
                 })}
@@ -490,7 +422,7 @@ export function FinanceDashboardClient({
             </table>
           </div>
         )}
-      </section>
+      </Panel>
     </div>
   );
 }

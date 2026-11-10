@@ -192,6 +192,7 @@ export async function revalidateAllCarPaths(carId?: string, slug?: string) {
 
   revalidatePath("/admin", "page");
   revalidatePath("/admin", "layout");
+  revalidatePath("/admin/voitures", "page");
   revalidatePath("/admin/finances", "page");
   revalidatePath("/voitures", "page");
   revalidatePath("/voitures", "layout");
